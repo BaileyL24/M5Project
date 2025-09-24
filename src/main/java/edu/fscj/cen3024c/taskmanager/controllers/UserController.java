@@ -1,7 +1,7 @@
 // UserController.java
 // D. Singletary
-// 9/10/25
-// User controller for task manager application
+// 9/24/25
+// Controller for User entity, returns DTOs with task titles
 
 package edu.fscj.cen3024c.taskmanager.controllers;
 
@@ -21,7 +21,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // READ endpoints return DTOs
+    // ===== READ endpoints return DTOs =====
 
     @GetMapping
     public List<UserDTO> getAllUsers() {
@@ -33,11 +33,12 @@ public class UserController {
         return userService.findById(id);
     }
 
-    // WRITE endpoints accept/return entities
+    // ===== WRITE endpoints accept entities but return DTOs =====
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.save(user);
+    public UserDTO createUser(@RequestBody User user) {
+        User savedUser = userService.save(user);
+        return userService.convertToDTO(savedUser);
     }
 
     @PutMapping("/{id}")

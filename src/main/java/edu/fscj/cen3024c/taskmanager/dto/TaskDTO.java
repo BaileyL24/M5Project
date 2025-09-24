@@ -1,7 +1,7 @@
 // TaskDTO.java
 // D. Singletary
-// 9/10/25
-// Task DTO for task manager application
+// 9/24/25
+// DTO for Task entity (includes subtasks and assigned users)
 
 package edu.fscj.cen3024c.taskmanager.dto;
 
@@ -10,30 +10,29 @@ import java.util.Set;
 
 public class TaskDTO {
 
-    private Integer id;              // include task id
+    private Integer id;
     private String title;
     private String description;
     private String status;
-    private String dueDate;
-
-    // Expose only what’s useful for the client
-    private String priorityLevel;   // from Priority entity
-    private List<String> subtasks;  // titles of subtasks
-    private Set<String> users;      // usernames of assigned users
+    private String dueDate;           // changed from LocalDate to String
+    private String priorityLevel;
+    private List<String> subtaskTitles;
+    private Set<String> usernames;    // associated users
 
     // Constructors
     public TaskDTO() {}
 
-    public TaskDTO(Integer id, String title, String description, String status, String dueDate,
-                   String priorityLevel, List<String> subtasks, Set<String> users) {
+    public TaskDTO(Integer id, String title, String description, String status,
+                   String dueDate, String priorityLevel,
+                   List<String> subtaskTitles, Set<String> usernames) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.dueDate = dueDate;
         this.priorityLevel = priorityLevel;
-        this.subtasks = subtasks;
-        this.users = users;
+        this.subtaskTitles = subtaskTitles;
+        this.usernames = usernames;
     }
 
     // Getters & setters
@@ -55,9 +54,9 @@ public class TaskDTO {
     public String getPriorityLevel() { return priorityLevel; }
     public void setPriorityLevel(String priorityLevel) { this.priorityLevel = priorityLevel; }
 
-    public List<String> getSubtasks() { return subtasks; }
-    public void setSubtasks(List<String> subtasks) { this.subtasks = subtasks; }
+    public List<String> getSubtaskTitles() { return subtaskTitles; }
+    public void setSubtaskTitles(List<String> subtaskTitles) { this.subtaskTitles = subtaskTitles; }
 
-    public Set<String> getUsers() { return users; }
-    public void setUsers(Set<String> users) { this.users = users; }
+    public Set<String> getUsernames() { return usernames; }
+    public void setUsernames(Set<String> usernames) { this.usernames = usernames; }
 }

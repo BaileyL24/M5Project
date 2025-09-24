@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>edu.fscj.cen3024c</groupId>
-	<artifactId>M4Project</artifactId>
+	<artifactId>M5Project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>M4Project</name>
-	<description>M4Project</description>
+	<name>M5Project</name>
+	<description>M5Project</description>
 	<url/>
 	<licenses>
 		<license/>

@@ -1,6 +1,6 @@
 // TaskController.java
 // D. Singletary
-// 9/10/25
+// 9/24/25
 // Task controller for task manager application
 
 package edu.fscj.cen3024c.taskmanager.controllers;
@@ -8,6 +8,7 @@ package edu.fscj.cen3024c.taskmanager.controllers;
 import edu.fscj.cen3024c.taskmanager.dto.TaskDTO;
 import edu.fscj.cen3024c.taskmanager.entities.Priority;
 import edu.fscj.cen3024c.taskmanager.entities.Task;
+import edu.fscj.cen3024c.taskmanager.entities.User;
 import edu.fscj.cen3024c.taskmanager.exceptions.PriorityNotFoundException;
 import edu.fscj.cen3024c.taskmanager.repositories.PriorityRepository;
 import edu.fscj.cen3024c.taskmanager.services.TaskService;
@@ -27,7 +28,7 @@ public class TaskController {
     @Autowired
     private PriorityRepository priorityRepository;
 
-    // READ endpoints return DTOs
+    // ===== READ endpoints return DTOs =====
 
     @GetMapping
     public List<TaskDTO> getAllTasks() {
@@ -39,7 +40,7 @@ public class TaskController {
         return taskService.findById(id);
     }
 
-    // WRITE endpoints accept entities but return DTOs
+    // ===== WRITE endpoints accept entities but return DTOs =====
 
     @PostMapping
     public TaskDTO createTask(@RequestBody Task task) {
@@ -66,5 +67,13 @@ public class TaskController {
     public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
         taskService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ===== NEW: Associate a User with a Task =====
+    @PostMapping("/{taskId}/users/{userId}")
+    public ResponseEntity<Void> assignUserToTask(@PathVariable Integer taskId,
+                                                 @PathVariable Integer userId) {
+        taskService.assignUserToTask(taskId, userId);
+        return ResponseEntity.ok().build();
     }
 }

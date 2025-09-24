@@ -1,6 +1,6 @@
 // TaskService.java
 // D. Singletary
-// 9/10/25
+// 9/24/25
 // Task service for task manager application
 
 package edu.fscj.cen3024c.taskmanager.services;
@@ -11,6 +11,7 @@ import edu.fscj.cen3024c.taskmanager.entities.Task;
 import edu.fscj.cen3024c.taskmanager.entities.User;
 import edu.fscj.cen3024c.taskmanager.exceptions.TaskNotFoundException;
 import edu.fscj.cen3024c.taskmanager.repositories.TaskRepository;
+import edu.fscj.cen3024c.taskmanager.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +23,14 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
-    // CRUD Methods with DTO conversion
+    // ===== CRUD Methods with DTO conversion =====
 
     @Transactional(readOnly = true)
     public List<TaskDTO> findAll() {
@@ -74,8 +77,20 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    // Entity to DTO Conversion
+    // ===== NEW: Associate a User with a Task =====
+    @Transactional
+    public void assignUserToTask(Integer taskId, Integer userId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        task.getUsers().add(user);
+        taskRepository.save(task);
+    }
+
+    // ===== Entity to DTO Conversion =====
     public TaskDTO convertToDTO(Task task) {
         String priorityLevel = (task.getPriority() != null)
                 ? task.getPriority().getLevel().name()

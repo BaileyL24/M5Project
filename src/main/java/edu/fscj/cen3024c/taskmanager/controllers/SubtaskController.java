@@ -1,6 +1,6 @@
 // SubtaskController.java
 // D. Singletary
-// 9/10/25
+// 9/24/25
 // Subtask controller for task manager application
 
 package edu.fscj.cen3024c.taskmanager.controllers;
@@ -21,7 +21,7 @@ public class SubtaskController {
     @Autowired
     private SubtaskService subtaskService;
 
-    // READ endpoints return DTOs
+    // ===== READ endpoints return DTOs =====
 
     @GetMapping
     public List<SubtaskDTO> getAllSubtasks() {
@@ -33,17 +33,18 @@ public class SubtaskController {
         return subtaskService.findById(id);
     }
 
-    // WRITE endpoints accept entities but return DTOs
+    // ===== WRITE endpoints accept DTOs and return DTOs =====
 
     @PostMapping
-    public SubtaskDTO createSubtask(@RequestBody Subtask subtask) {
+    public SubtaskDTO createSubtask(@RequestBody SubtaskDTO dto) {
+        Subtask subtask = subtaskService.fromDTO(dto);  // build entity with Task reference
         Subtask savedSubtask = subtaskService.save(subtask);
         return subtaskService.convertToDTO(savedSubtask);
     }
 
     @PutMapping("/{id}")
-    public SubtaskDTO updateSubtask(@PathVariable Integer id, @RequestBody Subtask subtask) {
-        return subtaskService.updateSubtask(id, subtask);
+    public SubtaskDTO updateSubtask(@PathVariable Integer id, @RequestBody SubtaskDTO dto) {
+        return subtaskService.updateSubtask(id, dto);
     }
 
     @DeleteMapping("/{id}")

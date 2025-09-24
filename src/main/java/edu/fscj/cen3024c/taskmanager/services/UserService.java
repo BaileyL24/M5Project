@@ -1,11 +1,12 @@
 // UserService.java
 // D. Singletary
-// 9/10/25
+// 9/24/25
 // User service for task manager application
 
 package edu.fscj.cen3024c.taskmanager.services;
 
 import edu.fscj.cen3024c.taskmanager.dto.UserDTO;
+import edu.fscj.cen3024c.taskmanager.entities.Task;
 import edu.fscj.cen3024c.taskmanager.entities.User;
 import edu.fscj.cen3024c.taskmanager.exceptions.UserNotFoundException;
 import edu.fscj.cen3024c.taskmanager.repositories.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +26,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    // CRUD Methods with DTO conversion
+    // ===== CRUD Methods with DTO conversion =====
 
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
@@ -68,12 +70,18 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    // Entity to DTO Conversion
-
+    // ===== Entity to DTO Conversion =====
     public UserDTO convertToDTO(User user) {
+        Set<String> taskTitles = (user.getTasks() != null)
+                ? user.getTasks().stream()
+                .map(Task::getTitle)
+                .collect(Collectors.toSet())
+                : Set.of();
+
         return new UserDTO(
                 user.getId(),
-                user.getUsername()
+                user.getUsername(),
+                taskTitles
         );
     }
 }
