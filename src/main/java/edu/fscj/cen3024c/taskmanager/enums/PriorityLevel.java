@@ -1,17 +1,12 @@
+// PriorityLevel.java
+// D. Singletary
+// 9/10/25
+// Priority enums for task manager application
+
 package edu.fscj.cen3024c.taskmanager.enums;
 
 public enum PriorityLevel {
-    LOW("Low: Can be addressed later"),
-    MEDIUM("Medium: Needs attention but not urgent"),
-    HIGH("High: Requires immediate attention");
-
-    private final String description;
-
-    PriorityLevel(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+    LOW,
+    MEDIUM,
+    HIGH
 }
