@@ -1,10 +1,12 @@
 // UserService.java
 // D. Singletary
-// 9/24/25
+// 11/20/25
 // User service for task manager application
 
 package edu.fscj.cen3024c.taskmanager.services;
 
+import edu.fscj.cen3024c.taskmanager.dto.CreateUserRequestDTO;
+import edu.fscj.cen3024c.taskmanager.dto.UpdateUserRequestDTO;
 import edu.fscj.cen3024c.taskmanager.dto.UserDTO;
 import edu.fscj.cen3024c.taskmanager.entities.Task;
 import edu.fscj.cen3024c.taskmanager.entities.User;
@@ -50,15 +52,21 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public User save(User user) {
-        return userRepository.save(user);
+    // ===== Create / Update using request DTOs =====
+
+    @Transactional
+    public UserDTO createUser(CreateUserRequestDTO request) {
+        User user = new User(request.getUsername(), request.getPassword());
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
     }
 
     @Transactional
-    public UserDTO updateUser(Integer id, User userDetails) {
+    public UserDTO updateUser(Integer id, UpdateUserRequestDTO request) {
         User existingUser = findByIdEntity(id);
-        existingUser.setUsername(userDetails.getUsername());
-        existingUser.setPassword(userDetails.getPassword()); // will be hashed in a later module
+        existingUser.setUsername(request.getUsername());
+        existingUser.setPassword(request.getPassword()); // will be hashed in a later module
+
         User updatedUser = userRepository.save(existingUser);
         return convertToDTO(updatedUser);
     }

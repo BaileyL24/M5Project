@@ -1,13 +1,15 @@
 // SubtaskController.java
 // D. Singletary
-// 9/24/25
+// 11/20/25
 // Subtask controller for task manager application
 
 package edu.fscj.cen3024c.taskmanager.controllers;
 
+import edu.fscj.cen3024c.taskmanager.dto.CreateSubtaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.dto.SubtaskDTO;
-import edu.fscj.cen3024c.taskmanager.entities.Subtask;
+import edu.fscj.cen3024c.taskmanager.dto.UpdateSubtaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.services.SubtaskService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,18 +35,16 @@ public class SubtaskController {
         return subtaskService.findById(id);
     }
 
-    // ===== WRITE endpoints accept DTOs and return DTOs =====
+    // ===== WRITE endpoints accept request DTOs and return response DTOs =====
 
     @PostMapping
-    public SubtaskDTO createSubtask(@RequestBody SubtaskDTO dto) {
-        Subtask subtask = subtaskService.fromDTO(dto);  // build entity with Task reference
-        Subtask savedSubtask = subtaskService.save(subtask);
-        return subtaskService.convertToDTO(savedSubtask);
+    public SubtaskDTO createSubtask(@Valid @RequestBody CreateSubtaskRequestDTO request) {
+        return subtaskService.createSubtask(request);
     }
 
     @PutMapping("/{id}")
-    public SubtaskDTO updateSubtask(@PathVariable Integer id, @RequestBody SubtaskDTO dto) {
-        return subtaskService.updateSubtask(id, dto);
+    public SubtaskDTO updateSubtask(@PathVariable Integer id, @Valid @RequestBody UpdateSubtaskRequestDTO request) {
+        return subtaskService.updateSubtask(id, request);
     }
 
     @DeleteMapping("/{id}")

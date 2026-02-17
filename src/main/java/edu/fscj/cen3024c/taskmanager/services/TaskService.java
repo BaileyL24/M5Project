@@ -1,11 +1,14 @@
 // TaskService.java
 // D. Singletary
-// 9/24/25
+// 11/20/25
 // Task service for task manager application
 
 package edu.fscj.cen3024c.taskmanager.services;
 
+import edu.fscj.cen3024c.taskmanager.dto.CreateTaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.dto.TaskDTO;
+import edu.fscj.cen3024c.taskmanager.dto.UpdateTaskRequestDTO;
+import edu.fscj.cen3024c.taskmanager.entities.Priority;
 import edu.fscj.cen3024c.taskmanager.entities.Subtask;
 import edu.fscj.cen3024c.taskmanager.entities.Task;
 import edu.fscj.cen3024c.taskmanager.entities.User;
@@ -58,6 +61,37 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // ===== Create / Update using request DTOs =====
+
+    @Transactional
+    public TaskDTO createTask(CreateTaskRequestDTO request, Priority priority) {
+        Task task = new Task(
+                request.getTitle(),
+                request.getDescription(),
+                request.getStatus(),
+                request.getDueDate()
+        );
+        task.setPriority(priority);
+
+        Task savedTask = taskRepository.save(task);
+        return convertToDTO(savedTask);
+    }
+
+    @Transactional
+    public TaskDTO updateTask(Integer id, UpdateTaskRequestDTO request, Priority priority) {
+        Task existingTask = findByIdEntity(id);
+
+        existingTask.setTitle(request.getTitle());
+        existingTask.setDescription(request.getDescription());
+        existingTask.setStatus(request.getStatus());
+        existingTask.setDueDate(request.getDueDate());
+        existingTask.setPriority(priority);
+
+        Task updatedTask = taskRepository.save(existingTask);
+        return convertToDTO(updatedTask);
+    }
+
+    // (kept for compatibility with any existing callers)
     @Transactional
     public TaskDTO updateTask(Integer id, Task taskDetails) {
         Task existingTask = findByIdEntity(id);
@@ -77,7 +111,7 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    // ===== NEW: Associate a User with a Task =====
+    // ===== Associate a User with a Task =====
     @Transactional
     public void assignUserToTask(Integer taskId, Integer userId) {
         Task task = taskRepository.findById(taskId)

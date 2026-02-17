@@ -1,17 +1,18 @@
 // TaskController.java
 // D. Singletary
-// 9/24/25
+// 11/20/25
 // Task controller for task manager application
 
 package edu.fscj.cen3024c.taskmanager.controllers;
 
+import edu.fscj.cen3024c.taskmanager.dto.CreateTaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.dto.TaskDTO;
+import edu.fscj.cen3024c.taskmanager.dto.UpdateTaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.entities.Priority;
-import edu.fscj.cen3024c.taskmanager.entities.Task;
-import edu.fscj.cen3024c.taskmanager.entities.User;
 import edu.fscj.cen3024c.taskmanager.exceptions.PriorityNotFoundException;
 import edu.fscj.cen3024c.taskmanager.repositories.PriorityRepository;
 import edu.fscj.cen3024c.taskmanager.services.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,27 +41,18 @@ public class TaskController {
         return taskService.findById(id);
     }
 
-    // ===== WRITE endpoints accept entities but return DTOs =====
+    // ===== WRITE endpoints accept DTOs and return DTOs =====
 
     @PostMapping
-    public TaskDTO createTask(@RequestBody Task task) {
-        if (task.getPriority() != null && task.getPriority().getId() != null) {
-            Priority priority = priorityRepository.findById(task.getPriority().getId())
-                    .orElseThrow(() -> new PriorityNotFoundException(task.getPriority().getId()));
-            task.setPriority(priority);
-        }
-        Task savedTask = taskService.save(task);
-        return taskService.convertToDTO(savedTask);
+    public TaskDTO createTask(@Valid @RequestBody CreateTaskRequestDTO request) {
+        Priority priority = resolvePriority(request.getPriorityId());
+        return taskService.createTask(request, priority);
     }
 
     @PutMapping("/{id}")
-    public TaskDTO updateTask(@PathVariable Integer id, @RequestBody Task task) {
-        if (task.getPriority() != null && task.getPriority().getId() != null) {
-            Priority priority = priorityRepository.findById(task.getPriority().getId())
-                    .orElseThrow(() -> new PriorityNotFoundException(task.getPriority().getId()));
-            task.setPriority(priority);
-        }
-        return taskService.updateTask(id, task);
+    public TaskDTO updateTask(@PathVariable Integer id, @Valid @RequestBody UpdateTaskRequestDTO request) {
+        Priority priority = resolvePriority(request.getPriorityId());
+        return taskService.updateTask(id, request, priority);
     }
 
     @DeleteMapping("/{id}")
@@ -69,11 +61,19 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== NEW: Associate a User with a Task =====
+    // ===== Associate a User with a Task =====
     @PostMapping("/{taskId}/users/{userId}")
     public ResponseEntity<Void> assignUserToTask(@PathVariable Integer taskId,
                                                  @PathVariable Integer userId) {
         taskService.assignUserToTask(taskId, userId);
         return ResponseEntity.ok().build();
+    }
+
+    private Priority resolvePriority(Integer priorityId) {
+        if (priorityId == null) {
+            return null;
+        }
+        return priorityRepository.findById(priorityId)
+                .orElseThrow(() -> new PriorityNotFoundException(priorityId));
     }
 }

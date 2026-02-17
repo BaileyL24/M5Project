@@ -1,15 +1,17 @@
 // SubtaskService.java
 // D. Singletary
-// 9/24/25
+// 11/20/25
 // Subtask service for task manager application
 
 package edu.fscj.cen3024c.taskmanager.services;
 
+import edu.fscj.cen3024c.taskmanager.dto.CreateSubtaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.dto.SubtaskDTO;
+import edu.fscj.cen3024c.taskmanager.dto.UpdateSubtaskRequestDTO;
 import edu.fscj.cen3024c.taskmanager.entities.Subtask;
 import edu.fscj.cen3024c.taskmanager.entities.Task;
-import edu.fscj.cen3024c.taskmanager.enums.SubtaskStatus;
 import edu.fscj.cen3024c.taskmanager.exceptions.SubtaskNotFoundException;
+import edu.fscj.cen3024c.taskmanager.exceptions.TaskNotFoundException;
 import edu.fscj.cen3024c.taskmanager.repositories.SubtaskRepository;
 import edu.fscj.cen3024c.taskmanager.repositories.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,7 @@ public class SubtaskService {
         this.taskRepository = taskRepository;
     }
 
-    // ===== CRUD Methods with DTO conversion =====
+    // ===== READ =====
 
     @Transactional(readOnly = true)
     public List<SubtaskDTO> findAll() {
@@ -46,36 +48,46 @@ public class SubtaskService {
         return convertToDTO(subtask);
     }
 
-    public Subtask save(Subtask subtask) {
-        // Default status if not provided
-        if (subtask.getStatus() == null) {
-            subtask.setStatus(SubtaskStatus.PENDING);
-        }
-        return subtaskRepository.save(subtask);
+    @Transactional(readOnly = true)
+    public Subtask findByIdEntity(Integer id) {
+        return subtaskRepository.findById(id)
+                .orElseThrow(() -> new SubtaskNotFoundException(id));
     }
 
+    // ===== CREATE =====
+
     @Transactional
-    public SubtaskDTO updateSubtask(Integer id, SubtaskDTO dto) {
-        Subtask existingSubtask = subtaskRepository.findById(id)
-                .orElseThrow(() -> new SubtaskNotFoundException(id));
+    public SubtaskDTO createSubtask(CreateSubtaskRequestDTO request) {
 
-        existingSubtask.setTitle(dto.getTitle());
+        Task parentTask = taskRepository.findById(request.getTaskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.getTaskId()));
 
-        // Convert String to Enum safely
-        SubtaskStatus status = (dto.getStatus() != null)
-                ? SubtaskStatus.valueOf(dto.getStatus())
-                : SubtaskStatus.PENDING;
-        existingSubtask.setStatus(status);
+        Subtask subtask = new Subtask(
+                request.getTitle(),
+                request.getStatus(),   // Enum used directly
+                parentTask
+        );
 
-        // Update Task if taskId is provided
-        if (dto.getTaskId() != null) {
-            Task task = taskRepository.findById(dto.getTaskId())
-                    .orElseThrow(() -> new RuntimeException("Task not found"));
-            existingSubtask.setTask(task);
-        }
+        Subtask saved = subtaskRepository.save(subtask);
+        return convertToDTO(saved);
+    }
 
-        Subtask updatedSubtask = subtaskRepository.save(existingSubtask);
-        return convertToDTO(updatedSubtask);
+    // ===== UPDATE =====
+
+    @Transactional
+    public SubtaskDTO updateSubtask(Integer id, UpdateSubtaskRequestDTO request) {
+
+        Subtask existing = findByIdEntity(id);
+
+        Task parentTask = taskRepository.findById(request.getTaskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.getTaskId()));
+
+        existing.setTitle(request.getTitle());
+        existing.setStatus(request.getStatus());  // Enum used directly
+        existing.setTask(parentTask);
+
+        Subtask updated = subtaskRepository.save(existing);
+        return convertToDTO(updated);
     }
 
     public void deleteById(Integer id) {
@@ -85,33 +97,19 @@ public class SubtaskService {
         subtaskRepository.deleteById(id);
     }
 
-    // ===== Conversion Methods =====
+    // ===== Entity -> DTO =====
 
-    // Entity -> DTO
     public SubtaskDTO convertToDTO(Subtask subtask) {
-        Integer taskId = (subtask.getTask() != null) ? subtask.getTask().getId() : null;
+
+        Integer taskId = (subtask.getTask() != null)
+                ? subtask.getTask().getId()
+                : null;
 
         return new SubtaskDTO(
                 subtask.getId(),
                 subtask.getTitle(),
-                subtask.getStatus().name(),
+                subtask.getStatus().name(),  // Convert enum to String for DTO
                 taskId
-        );
-    }
-
-    // DTO -> Entity
-    public Subtask fromDTO(SubtaskDTO dto) {
-        Task task = taskRepository.findById(dto.getTaskId())
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        SubtaskStatus status = (dto.getStatus() != null)
-                ? SubtaskStatus.valueOf(dto.getStatus())
-                : SubtaskStatus.PENDING;
-
-        return new Subtask(
-                dto.getTitle(),
-                status,
-                task
         );
     }
 }
